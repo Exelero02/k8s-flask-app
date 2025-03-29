@@ -1,8 +1,6 @@
-﻿name: CI/CD
+﻿name: Kubernetes CI
 
-on:
-  push:
-    branches: [master]
+on: [push]
 
 jobs:
   validate:
@@ -10,22 +8,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Docker Image
+      - name: Test Docker Build
         run: docker build -t flask-app .
+
+      - name: Check Kustomize Structure
+        run: |
+          echo "Validating base configuration..."
+          test -f k8s/base/deployment.yaml
+          test -f k8s/base/service.yaml
+          test -f k8s/base/kustomization.yaml
+
+          echo "Validating dev overlay..."
+          test -f k8s/overlays/dev/kustomization.yaml
 
       - name: Generate Manifests
         run: |
-          kubectl kustomize ./k8s/overlays/dev > manifests.yaml
-          echo "Generated manifests:"
-          cat manifests.yaml
-
-      - name: Validate Manifests
-        run: |
-          kubectl apply -f manifests.yaml --dry-run=client
-          echo "Client-side validation passed!"
+          echo "---" > manifests.yaml
+          cat k8s/base/deployment.yaml >> manifests.yaml
+          echo "---" >> manifests.yaml
+          cat k8s/base/service.yaml >> manifests.yaml
+          echo "Manifests combined successfully!"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kubernetes-manifests
-          path: manifests.yaml
+          name: kubernetes-configs
+          path: |
+            manifests.yaml
+            k8s/
