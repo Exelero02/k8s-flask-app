@@ -1,13 +1,21 @@
-﻿name: Basic CI/CD
+﻿name: Kubernetes CI
+
 on: [push]
 
 jobs:
-  verify:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Simple Test
+
+      - name: Verify Files Exist
         run: |
-          echo "✅ GitHub Actions is working!"
-          echo "Project structure:"
-          ls -R
+          echo "Checking required files..."
+          ls k8s/base/deployment.yaml
+          ls k8s/overlays/dev/kustomization.yaml
+
+      - name: Build Manifests
+        run: |
+          echo "Generating manifests..."
+          kubectl kustomize k8s/overlays/dev > manifests.yaml
+          cat manifests.yaml
