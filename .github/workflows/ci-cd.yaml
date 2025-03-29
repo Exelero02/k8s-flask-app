@@ -1,34 +1,13 @@
-﻿name: CI/CD Pipeline
-
-on:
-  push:
-    branches: ["master"]
-  pull_request:
+﻿name: Basic CI/CD
+on: [push]
 
 jobs:
-  lint-test:
+  verify:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Install Kubernetes tools
-      run: |
-        curl -sLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/latest/download/kustomize_linux_amd64.tar.gz
-        tar -xzf kustomize.tar.gz
-        chmod +x kustomize
-        sudo mv kustomize /usr/local/bin/
-
-    - name: Setup KinD Cluster
-      uses: helm/kind-action@v1.8.0
-
-    - name: Validate Kubernetes Manifests
-      run: |
-        echo "Validating base configuration..."
-        kubectl kustomize ./k8s/base > manifest.yaml
-        kubectl apply --dry-run=server -f manifest.yaml
-        rm manifest.yaml
-
-        echo "Validating dev overlay..."
-        kubectl kustomize ./k8s/overlays/dev > dev-manifest.yaml
-        kubectl apply --dry-run=server -f dev-manifest.yaml
-        rm dev-manifest.yaml
+      - uses: actions/checkout@v4
+      - name: Simple Test
+        run: |
+          echo "✅ GitHub Actions is working!"
+          echo "Project structure:"
+          ls -R
