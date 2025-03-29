@@ -2,6 +2,10 @@
 
 on: [push]
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -10,19 +14,17 @@ jobs:
 
       - name: Lint YAML files
         run: |
-          pip install yamllint
+          sudo apt-get install -y yamllint  # System package (no pip needed)
           yamllint -d relaxed ./k8s/
 
-      - name: Build Manifests
+      - name: Build and Validate Manifests
         run: |
           kubectl kustomize k8s/overlays/dev > manifests.yaml
+          kubectl apply -f manifests.yaml --dry-run=server
           cat manifests.yaml
 
-      - name: Validate Manifests
-        run: kubectl apply -f manifests.yaml --dry-run=server
-
       - name: Upload Manifests
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: kubernetes-manifests
           path: manifests.yaml
