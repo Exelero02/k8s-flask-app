@@ -51,5 +51,7 @@ minikube service flask-app-service
 ## 🧠 Learning Highlights
 
 -Debugged ErrImageNeverPull by rebuilding in Minikube Docker
+
 -Configured zero-downtime deployments
+
 -Implemented Kustomize for environment management
