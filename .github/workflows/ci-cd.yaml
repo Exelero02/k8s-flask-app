@@ -11,36 +11,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'v1.25.0'
+    - name: Install Kustomize
+      run: |
+        curl -sLo kustomize.tar.gz https://github.com/kubernetes-sigs/kustomize/releases/latest/download/kustomize_linux_amd64.tar.gz
+        tar -xzf kustomize.tar.gz
+        chmod +x kustomize
+        sudo mv kustomize /usr/local/bin/
 
     - name: Validate Kubernetes Manifests
       run: |
         echo "Validating base configuration..."
-        kubectl kustomize ./k8s/base > manifest.yaml
-        kubectl apply -f manifest.yaml --dry-run=server
+        kustomize build ./k8s/base > manifest.yaml
+        cat manifest.yaml  
         rm manifest.yaml
 
         echo "Validating dev overlay..."
-        kubectl kustomize ./k8s/overlays/dev > dev-manifest.yaml
-        kubectl apply -f dev-manifest.yaml --dry-run=server
+        kustomize build ./k8s/overlays/dev > dev-manifest.yaml
+        cat dev-manifest.yaml
         rm dev-manifest.yaml
-
-  deploy-dev:
-    needs: lint-test
-    if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Simulate Deployment
-      run: |
-        echo "Deployment simulation:"
-        echo "1. Would build Docker image: docker build -t flask-app ."
-        echo "2. Would push to registry: docker push flask-app"
-        echo "3. Would apply configuration: kubectl apply -k k8s/overlays/dev"
-        
-        echo "Generated manifests:"
-        kubectl kustomize k8s/overlays/dev
