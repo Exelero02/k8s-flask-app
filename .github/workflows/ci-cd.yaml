@@ -14,12 +14,19 @@ jobs:
     - name: Install kubectl
       uses: azure/setup-kubectl@v3
       with:
-        version: 'latest'
+        version: 'v1.25.0'
 
-    - name: Lint K8s Manifests
+    - name: Validate Kubernetes Manifests
       run: |
-        kubectl kustomize ./k8s/base --validate=true
-        kubectl apply -k ./k8s/base --dry-run=server
+        echo "Validating base configuration..."
+        kubectl kustomize ./k8s/base > manifest.yaml
+        kubectl apply -f manifest.yaml --dry-run=server
+        rm manifest.yaml
+
+        echo "Validating dev overlay..."
+        kubectl kustomize ./k8s/overlays/dev > dev-manifest.yaml
+        kubectl apply -f dev-manifest.yaml --dry-run=server
+        rm dev-manifest.yaml
 
   deploy-dev:
     needs: lint-test
@@ -30,9 +37,10 @@ jobs:
 
     - name: Simulate Deployment
       run: |
-        echo "In a real pipeline:"
-        echo "1. docker build -t flask-app ."
-        echo "2. docker push flask-app"
-        echo "3. kubectl apply -k k8s/overlays/dev"
+        echo "Deployment simulation:"
+        echo "1. Would build Docker image: docker build -t flask-app ."
+        echo "2. Would push to registry: docker push flask-app"
+        echo "3. Would apply configuration: kubectl apply -k k8s/overlays/dev"
         
+        echo "Generated manifests:"
         kubectl kustomize k8s/overlays/dev
