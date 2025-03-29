@@ -6,12 +6,15 @@
 
 A complete example of containerizing a Flask app and deploying it to Kubernetes (Minikube), demonstrating core DevOps principles.
 
-## ✨ Features
+## 🛠️ **Core Technologies Used**
+| Component       | Purpose                          | Key Feature Demonstrated              |
+|-----------------|----------------------------------|---------------------------------------|
+| **Flask**       | Web application framework        | REST endpoint implementation          |
+| **Docker**      | Containerization                | Multi-stage builds for production     |
+| **Kubernetes**  | Orchestration                   | Deployments, Services, Kustomize     |
+| **Minikube**    | Local K8s cluster               | Developer environment simulation      |
+| **GitHub Actions** | CI/CD Pipeline               | Automated validation                 |
 
-- **Containerized Flask application** with Docker
-- **Kubernetes manifests** using Kustomize
-- **CI/CD Pipeline** with GitHub Actions
-- **Local development** setup with Minikube
 
 ## 🚀 Quick Start
 
@@ -23,11 +26,13 @@ A complete example of containerizing a Flask app and deploying it to Kubernetes 
 ### Local Deployment
 ```bash
 # Start Minikube
-minikube start
+minikube start --driver=docker
 
-# Build and deploy
+# Build
 minikube docker-env | Invoke-Expression
 docker build -t flask-app .
+
+# Deploy
 kubectl apply -k k8s/overlays/dev
 
 # Access the app
@@ -55,3 +60,8 @@ minikube service flask-app-service
 -Configured zero-downtime deployments
 
 -Implemented Kustomize for environment management
+
+## 🚧 Debugging Cheat Sheet
+1. Image not found? → Rebuild in Minikube Docker
+2. Port conflicts? → Check service.yaml targetPort
+3. Pod crashing? → kubectl logs <pod-name>
