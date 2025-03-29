@@ -1,0 +1,34 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Lint K8s Manifests
+      uses: azure/k8s-manifests@v1
+      with:
+        action: lint
+        manifests: ./k8s/base/deployment.yaml
+
+  deploy-dev:
+    needs: lint-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Simulate Deployment
+      run: |
+        echo "In a real pipeline, we would now:"
+        echo "1. Build Docker image"
+        echo "2. Push to registry (e.g. Docker Hub)"
+        echo "3. kubectl apply -k k8s/overlays/dev"
+        
+        kubectl kustomize k8s/overlays/dev
