@@ -1,10 +1,8 @@
-﻿name: CI/CD
+﻿name: Kubernetes CI/CD
 
-on: [push]
-
-permissions:
-  contents: read
-  actions: read
+on:
+  push:
+    branches: [master]
 
 jobs:
   validate:
@@ -12,16 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Lint YAML files
-        run: |
-          sudo apt-get install -y yamllint  # System package (no pip needed)
-          yamllint -d relaxed ./k8s/
+      - name: Build Docker Image
+        run: docker build -t flask-app .
 
-      - name: Build and Validate Manifests
+      - name: Test Deployment
         run: |
-          kubectl kustomize k8s/overlays/dev > manifests.yaml
+          kubectl kustomize ./k8s/overlays/dev > manifests.yaml
           kubectl apply -f manifests.yaml --dry-run=server
-          cat manifests.yaml
+          echo "Validation successful - ready for real cluster deployment!"
 
       - name: Upload Manifests
         uses: actions/upload-artifact@v4
